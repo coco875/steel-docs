@@ -9,3 +9,7 @@ description: How to set-up the project and start contributing.
 - How to download the SteelMC repository
 - How to compile the binary
 - How to set up and start a simple server
+
+## Configuration
+
+- [**Configuration Overview**](../../configuration/overview) - Learn how to configure your SteelMC server
