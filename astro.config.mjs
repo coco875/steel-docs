@@ -5,7 +5,7 @@ import { ion } from "starlight-ion-theme";
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-    site: 'https://coco875.github.io',
+    // site: 'https://coco875.github.io',
     base: '/steel-docs/',
     integrations: [
         starlight({
