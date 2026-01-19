@@ -1,13 +1,77 @@
 ---
 title: Adding a New Block (Basic Setup)
-description: Gives a basic guidance of how to add a new block without an behaviour and gives hints for behaviour
+description: Gives a basic guidance of how to add a new block without a behaviour and gives hints for behaviour
 ---
 
 > ⚠️ This is only the very basic setup and **does not provide any functionality yet**.
 
 ---
 
-## 1. Register the Block Module
+## 1. Select Which Block to Add
+
+At first, select which block you want to add to the project.
+
+**Example:** In this guide, we want to add **Iron Bars** and **Copper Bars**.
+
+---
+
+## 2. Check the Class Name in `classes.json`
+
+Before we can create our struct, we need to check how to name it properly.
+
+Go to the file:
+
+```
+steel-core/build/classes.json
+```
+
+Search for your block in this file. In our example:
+- We find `IronBarsBlock`
+- We find `WeatheringCopperBarsBlock`
+
+This means we need **two different structs** to manage both blocks.
+
+---
+
+## 3. Create Your Block Class File
+
+Now create your class in:
+
+```
+steel-core/src/behavior/blocks/
+```
+
+Be **as descriptive as possible** with the file name. For our example:
+- `iron_bars_block.rs`
+- `copper_bars_block.rs`
+
+---
+
+## 4. Add the Struct Definition
+
+Add the struct like this to your file:
+
+```rust
+pub struct IronBarsBlock {
+    block: BlockRef,
+}
+
+impl IronBarsBlock {
+    /// Creates a new bar block behavior for the given block.
+    #[must_use]
+    pub const fn new(block: BlockRef) -> Self {
+        Self { block }
+    }
+}
+
+impl BlockBehaviour for IronBarsBlock {}
+```
+
+> ⚠️ This is only the basic setup and **doesn't give any functionality yet!**
+
+---
+
+## 5. Register the Block Module
 
 Add your block module to:
 
@@ -24,13 +88,15 @@ pub use iron_bars_block::IronBarsBlock;
 
 ---
 
-## 2. Verify the Struct Name
+## 6. Verify the Struct Name
 
-Double-check that your **struct name is correct**, as it must match everywhere it is referenced.
+Now it would be **a good time to check** if your struct name is really correct!
+
+Double-check that your **struct name** matches what you found in `classes.json`.
 
 ---
 
-## 3. Add the Struct to the Generated Blocks
+## 7. Add the Struct to the Generated Blocks
 
 Now we need to add the struct to the generated block list.
 This happens in:
@@ -40,11 +106,11 @@ steel-core/build/blocks.rs
 ```
 
 If you want to understand what is happening internally, the function
-`generate_registrations` is interesting to read — but **it is not required** to get your block working.
+`generate_registrations` can be interesting — but **it is not required** to get your block working.
 
 ---
 
-## 4. Focus on the Build Function
+## 8. Focus on the Build Function
 
 We will now focus on the `build` function in the opened file.
 
@@ -54,7 +120,7 @@ Do **not remove or modify existing code**, as this could break blocks from other
 
 ---
 
-## 5. Create a Mutable Vector
+## 9. Create a Mutable Vector
 
 First, create a mutable vector with a descriptive name:
 
@@ -64,7 +130,7 @@ let mut iron_bar_blocks = Vec::new();
 
 ---
 
-## 6. Extend the Match Statement
+## 10. Extend the Match Statement
 
 Add your block struct name to the `match` statement.
 Again: **only add your line**, do not remove others.
@@ -82,7 +148,7 @@ for block in blocks {
 
 ---
 
-## 7. Define the Block Type
+## 11. Define the Block Type
 
 Now define the block type identifier:
 
@@ -92,7 +158,7 @@ let iron_bar_type = Ident::new("IronBarsBlock", Span::call_site());
 
 ---
 
-## 8. Generate Registrations
+## 12. Generate Registrations
 
 Next, generate the registrations:
 
@@ -103,7 +169,7 @@ let iron_bar_registrations =
 
 ---
 
-## 9. Add the Registrations to the Output
+## 13. Add the Registrations to the Output
 
 ⚠️ **Be very careful here!**
 
@@ -138,9 +204,9 @@ let output = quote! {
 
 ---
 
-## 10. Compile the Project
+## 14. Compile the Project
 
-Now compile the project and let Rust (and the build system) do its magic.
+Now press **compile** and let Rust (and our configuration) do some magic!
 
 After compilation, your block should appear in:
 
@@ -148,9 +214,11 @@ After compilation, your block should appear in:
 steel-core/src/behavior/generated/blocks.rs
 ```
 
+You can go there and use **Ctrl + F** to search for your block name.
+
 ### Troubleshooting
 
-If your block is missing:
+If your block is still missing:
 
 1. Delete the `generated` folder
 2. Run:
@@ -160,47 +228,52 @@ If your block is missing:
    ```
 3. Compile again
 
-This usually resolves the issue.
+This should solve the problem.
 
 ---
 
 # Adding Behavior to the Block
 
-At this point, the block **does nothing**.
-To add behavior, you must implement the required methods in `BlockBehaviour` in your block file (e.g. `iron_bars_block.rs`).
+Like already said, at this point the block **does nothing**.
 
-👉 A good approach is to look at **existing blocks** with similar behavior and use them as references.
+To add behavior, you need to implement the necessary methods in `BlockBehaviour` in your file (e.g. `iron_bars_block.rs`).
+
+👉 **I would recommend** looking at other block implementations to check which have similar block functionality as your block.
+
+For that, here is some information to give you a better understanding:
 
 ---
 
 ## Working with Block States
 
-### Getting a Neighbor Block State
+### Getting a Block State
+
+To get a block state, you can do something like this:
 
 ```rust
 let west_pos = Direction::West.relative(pos);
 let west_state = world.get_block_state(&west_pos);
 ```
 
-A `BlockState` contains **all information** about that specific block.
+In this block state, **all information** of this specific block is saved.
 
 ---
 
 ### Modifying Block State Properties
 
-Set a value:
+This can be changed like this:
 
 ```rust
 state.set_value(&BlockStateProperties::WEST, true);
 ```
 
-Get a value works the same way, just in reverse.
+Getting a value is vice versa.
 
 ---
 
 ## Checking Neighbor Blocks or Tags
 
-To check whether a neighboring block belongs to a specific block group (e.g. walls or bars):
+To check if the neighbor or the block set is a specific block or block group (like bars or walls), you can use this:
 
 ```rust
 let walls_tag = Identifier::vanilla_static("walls");
@@ -211,7 +284,7 @@ if REGISTRY.blocks.is_in_tag(neighbor_block, &walls_tag) {
 
 ---
 
-That’s it — you now have the **basic structure** in place and can start implementing real behavior 🚀
+That's it — you now have the **basic structure** in place and can start implementing real behavior 🚀
 
 ## Other useful resources
 Currently no available
